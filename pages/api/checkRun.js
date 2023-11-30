@@ -1,5 +1,5 @@
 // pages/api/checkRun.js
-import { runCheck } from "../utils/openai";
+import { runCheck } from "../../utils/openai";
 import { NextApiResponse, NextApiRequest } from "next";
 
 export default async function handler(req, res) {

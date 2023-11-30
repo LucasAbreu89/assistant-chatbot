@@ -1,5 +1,5 @@
 // pages/api/messages.js
-import { getMessages } from "../utils/openai";
+import { getMessages } from "../../utils/openai";
 import { NextApiResponse, NextApiRequest } from "next";
 
 export default async function handler(req, res) {

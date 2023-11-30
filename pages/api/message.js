@@ -1,4 +1,4 @@
-import { createMessage } from "../utils/openai";
+import { createMessage } from "../../utils/openai";
 import { NextApiResponse, NextApiRequest } from "next";
 
 export default async function handler(req, res) {

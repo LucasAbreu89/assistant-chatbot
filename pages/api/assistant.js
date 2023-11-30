@@ -1,5 +1,5 @@
 import { NextApiResponse, NextApiRequest } from "next";
-import { getAssistant } from "../utils/openai";
+import { getAssistant } from "../../utils/openai";
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
