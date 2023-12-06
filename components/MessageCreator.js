@@ -1,6 +1,6 @@
-// MessageCreator.js
-
-import { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import instructions from './instructions';
+import FileUploader from './FileUploader'; // Ajuste o caminho de acordo com sua estrutura de diretórios
 
 const MessageCreator = ({ threadId, assistantId }) => {
   const [content, setContent] = useState('');
@@ -8,6 +8,9 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const [runId, setRunId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState(null);
+  const [showCopiedAlert, setShowCopiedAlert] = useState(false);
+  const [copied, setCopied] = useState(null); // Adicionado estado para 'copied'
+
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -18,6 +21,29 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const getMessageType = (role) => {
     return role === 'user' ? 'User:' : 'Assistant:';
   };
+
+  const initialMessage = {
+    id: 'initial-message',
+    role: 'assistant',
+    content: [{
+      text: {
+        value: `Hello there! 👋 I'm thrilled to welcome you to our tutoring service where I'm here to provide you a helping hand with your IB Physics queries. 🎓 Whether you're puzzling over a tricky problem, prepping for exams, or getting your Physics IA off the ground, I'm here to guide you through it all with friendly and insightful support. ✨
+
+Don't hesitate to reach out with whatever's on your mind. Here's how I can assist you:
+
+- Struggling with homework? Let's work through it together step-by-step. 📚
+- IA got you perplexed? I can help clarify your ideas or review your draft. 🔍
+- Exam prep making you anxious? I've got strategies to boost your confidence and performance. 🏆
+- Curious about real-world physics? Let's discuss how it all applies beyond the classroom. 🌍
+
+So, how can I help you shine in IB Physics today? Let me know by picking an option or ask away about anything else physics-related! 😊
+
+Just remember, no question is too small and every challenge is an opportunity to learn and grow. Let's get started!`
+      }
+    }]
+  };
+
+
 
   const createNewMessage = async () => {
     setLoading(true);
@@ -43,7 +69,6 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
 
   const runAssistant = async () => {
-    const instructions = "be polite"; // Ou alguma lógica para definir as instruções
     try {
       const res = await fetch('/api/run', {
         method: 'POST',
@@ -98,49 +123,120 @@ const MessageCreator = ({ threadId, assistantId }) => {
     }
   };
 
+  const formatMessage = (message) => {
+    return message.split('\n').map((item, key) => (
+      <React.Fragment key={key}>
+        {item}
+        <br />
+      </React.Fragment>
+    ));
+  };
 
+
+  const messagesEndRef = useRef(null);
+  const loadingRef = useRef(null);
+
+  const scrollToBottom = () => {
+    if (loading) {
+      loadingRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setShowCopiedAlert(true);
+      setTimeout(() => setShowCopiedAlert(false), 2000); // Esconde o aviso após 2 segundos
+    }).catch(err => {
+      console.error('Erro ao copiar texto: ', err);
+    });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-200">
-      <div className="w-[800px] p-4 bg-gray-700 rounded-lg shadow-md mx-auto"> {/* Alterado para fundo cinza escuro */}
-        <div className="mb-4 overflow-y-auto h-[400px]" >
+    <div className="flex justify-center items-center h-screen bg-white">
+      <div className="w-[850px] p-4 bg-white rounded-lg shadow-md mx-auto">
+        <div className="mb-4 overflow-y-auto h-[400px] bg-white">
+          {/* Renderizar a mensagem inicial com a imagem do assistente */}
+          <div className={`relative flex items-center p-5 my-5 mr-4 rounded-lg bg-gray-50 text-black`}>
+            <img src="/physics.jpeg" alt="Assistant" className="h-16 w-16 mr-4 rounded-full" />
+            <div className="flex-grow" >
+              <p><strong>{getMessageType(initialMessage.role)}</strong></p>
+              <div>{formatMessage(initialMessage.content[0].text.value)}</div>
+            </div>
+          </div>
+
+          {/* Renderizar as mensagens do chat */}
           {messages && Array.isArray(messages) && (
             [...messages].reverse().map((message) => (
-              <div key={message.id} className={`p-5 my-5 mr-4 rounded-lg ${message.role === 'user' ? 'bg-gray-200' : 'bg-gray-300'} text-black`}> {/* Alterado para cinza claro para mensagens do usuário e cinza médio para o bot */}
-                <p><strong>{getMessageType(message.role)}</strong></p> {/* Movido para uma linha separada */}
-                <p>{message.content[0].text.value}</p>
+              <div key={message.id} className={`relative flex items-center p-5 my-5 mr-4 rounded-lg ${message.role === 'assistant' ? 'bg-gray-50' : 'bg-gray-100'} text-black`}>
+                {message.role === 'assistant' ? (
+                  <>
+                    <img src="/physics.jpeg" alt="Assistant" className="h-16 w-16 mr-4 rounded-full" />
+                    <div className="flex-grow">
+                      <p><strong>{getMessageType(message.role)}</strong></p>
+                      <p>{formatMessage(message.content[0].text.value)}</p>
+                    </div>
+                    <img
+                      src="/copy.png"
+                      alt="Copy"
+                      className={`absolute top-0 right-0 h-6 w-6 m-2 cursor-pointer hover:opacity-80 ${copied === message.id ? 'text-green-500' : ''}`}
+                      onClick={() => copyToClipboard(message.content[0].text.value, message.id)}
+                    />
+                    {showCopiedAlert && (
+                      <div className="fixed top-10 right-10 bg-green-500 text-white py-2 px-4 rounded-md">
+                        Text Copied!
+                      </div>
+                    )}
+
+                  </>
+
+                ) : (
+                  // User's message layout
+                  <>
+                    <img src="/user.png" alt="User" className="h-16 w-16 mr-4 rounded-full" />
+                    <div className="flex-grow">
+                      <p><strong>{getMessageType(message.role)}</strong></p>
+                      <p>{formatMessage(message.content[0].text.value)}</p>
+                    </div>
+                  </>
+                )}
               </div>
             ))
           )}
+          <div ref={messagesEndRef} />
+
           {loading && (
-            <div className="flex justify-center items-center pt-2">
+            <div ref={loadingRef} className="flex justify-center items-center pt-2">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           )}
         </div>
+
         <div>
           <textarea
             className="w-full p-2 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:shadow-outline"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Digite sua mensagem"
+            placeholder="Type your Message"
           />
           <button
             className="w-full p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:shadow-outline"
             onClick={createNewMessage}
             disabled={!content || loading}
           >
-            {loading ? 'Enviando...' : 'Enviar Mensagem'}
+            {loading ? 'Sending...' : 'Send Message'}
           </button>
 
         </div>
       </div>
     </div>
   );
-
-
 };
-
 
 export default MessageCreator;

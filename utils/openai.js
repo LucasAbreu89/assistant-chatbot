@@ -1,5 +1,6 @@
 import { OpenAI } from "openai";
 import * as dotenv from "dotenv";
+import fs from 'fs';
 
 dotenv.config();
 
@@ -70,6 +71,54 @@ export const getMessages = async (threadId) => {
     return messages;
   } catch (error) {
     console.error("Error in getMessages:", error);
+    throw error;
+  }
+};
+
+export const UploadFile = async (filePath) => {
+  try {
+    const fileStream = fs.createReadStream(filePath);
+    const file = await openai.files.create({
+      file: fileStream,
+      purpose: "assistants",
+    });
+    // console.log("Resposta da OpenAI:", file); // Log da resposta completa
+    // console.log(filePath)
+    return file;
+  } catch (error) {
+    console.error("Erro ao fazer upload do arquivo:", error);
+    throw error;
+  }
+};
+
+
+
+export const updateThreadWithFile = async (threadId, fileId) => {
+  try {
+    const updatedThread = await openai.beta.threads.update(threadId, {
+      metadata: {
+        fileUploaded: "true",
+        fileId: fileId,
+      }
+    });
+    console.log(`Thread updated with id: ${threadId} and file id: ${fileId}`);
+    return updatedThread;
+  } catch (error) {
+    console.error("Error updating thread with file:", error);
+    throw error;
+  }
+};
+
+export const createMessageWithFile = async ({ threadId, content, fileId }) => {
+  try {
+    const message = await openai.beta.threads.messages.create(threadId, {
+      role: "user",
+      content: content,
+      file_ids: [fileId],
+    });
+    return message;
+  } catch (error) {
+    console.error("Error in createMessageWithFile:", error);
     throw error;
   }
 };
