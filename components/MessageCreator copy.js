@@ -36,8 +36,6 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const [messages, setMessages] = useState(null);
   const [showCopiedAlert, setShowCopiedAlert] = useState(false);
   const [copied, setCopied] = useState(null); // Adicionado estado para 'copied'
-  const [isHovered, setIsHovered] = useState(false); // Novo estado para controle de hover
-  const [showTooltip, setShowTooltip] = useState(false); // Novo estado para o tooltip
 
 
   const handleKeyDown = (e) => {
@@ -254,50 +252,22 @@ Just remember, no question is too small and every challenge is an opportunity to
           )}
         </div>
 
-        <div className="relative">
+        <div>
           <textarea
             className="w-full p-2 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:shadow-outline"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type your Message"
-            style={{ paddingRight: '40px', paddingBottom: '20px' }}  // Mantém o espaço extra à direita e embaixo
           />
-          <div
-            className="absolute bottom-4 right-2 cursor-pointer"
-            onClick={!loading && content ? createNewMessage : null}
-            onMouseEnter={() => { setIsHovered(true); setShowTooltip(true); }}  // Mostra o tooltip
-            onMouseLeave={() => { setIsHovered(false); setShowTooltip(false); }} // Esconde o tooltip
+          <button
+            className="w-full p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:shadow-outline"
+            onClick={createNewMessage}
+            disabled={!content || loading}
           >
-            {loading ? (
-              <img src="/square.png" alt="Enviando" className="h-8 w-8" style={{ borderRadius: '20%', border: '2px solid white' }} />
-            ) : (
-              <img
-                src={isHovered ? "/arrow2.png" : "/arrow.png"}
-                alt="Enviar"
-                className="h-8 w-8"
-                style={{ borderRadius: '20%', border: '2px solid white' }}
-              />
-            )}
+            {loading ? 'Sending...' : 'Send Message'}
+          </button>
 
-            {showTooltip && (
-              <div style={{
-                position: 'absolute',
-                bottom: '40px',  // Ajuste para alinhar com o ícone
-                left: '50%',
-                transform: 'translateX(-50%)', // Centraliza o tooltip em relação ao ícone
-                backgroundColor: 'black',
-                color: 'white',
-                padding: '5px',
-                borderRadius: '4px',
-                fontWeight: 'bold',
-                whiteSpace: 'nowrap',
-                fontSize: '12px',  // Garante que o texto fique em uma única linha
-              }}>
-                Send Message
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
