@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import instructions from './instructions';
-import FileUploader from './FileUploader'; // Ajuste o caminho de acordo com sua estrutura de diretórios
 
 const MessageCreator = ({ threadId, assistantId }) => {
   const [content, setContent] = useState('');
