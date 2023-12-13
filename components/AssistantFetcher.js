@@ -1,6 +1,6 @@
 // AssistantFetcher.js
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const AssistantFetcher = ({ setThreadId }) => {
   const [assistant, setAssistant] = useState(null);
@@ -8,11 +8,7 @@ const AssistantFetcher = ({ setThreadId }) => {
 
   const assistantId = 'asst_TBktcPn6uphZ5ZTNq9nQAvLL';
 
-  useEffect(() => {
-    fetchAssistant();
-  }, []); 
-
-  const fetchAssistant = async () => {
+  const fetchAssistant = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/assistant?assistantId=${assistantId}`);
@@ -27,7 +23,11 @@ const AssistantFetcher = ({ setThreadId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAssistant();
+  }, [fetchAssistant]);
 
   const createThread = async () => {
     try {

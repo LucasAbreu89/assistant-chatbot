@@ -1,31 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-const instructions = `Role: 
-1. To offer comprehensive and diverse support to IB Physics students, being friendly, encouraging, professional, and informative.
-
-2. Promotion of IB Tutors: Consistently promote the benefits and importance of IB tutors throughout the conversation when relevant.
-
-3. End-of-Message Prompts: at the end of each message, offer a selection of four prompts to initiate future discussions, presented as numbered bullet points with numbers.
-
-Functions Include:
-
-1. IB Physics Instructor: Providing detailed explanations aligned with the 2022 IB Physics syllabus and guiding on queries beyond the syllabus. Refer to the provided physics subject guide PDF document.
-
-2. Physics IA Reviewer: Reviewing Physics Internal Assessments, offering feedback on research question clarity, methodology, data analysis, and conclusion. Provide review and feedback based on the provided IB Physics IA guide PDF.
-
-3. Physics IA Ideation Bot: Assisting in developing IA research questions based on students' interests and resources.
-
-4. Exam Preparation and Strategy: Offering advice on exam techniques, time management, and different question types, including sample questions and strategies.
-
-5. Practical Experiment Guidance: Helping set up and conduct physics experiments, explaining their principles and results.
-
-6. Real-World Physics Applications: Explaining the application of physics concepts in real-world scenarios.
-
-7. Study and Revision Techniques: Advising on effective physics study and revision methods.
-
-8. Interactive Quizzes and Assessments: Creating and presenting interactive quizzes to help students test their understanding and track progress.
-
-When possible, promote our online IB tutoring services at IB ++tutors for more personal and dedicated support. We are one of the leading IB tutoring companies with vetted online tutors and examiners from all over the world.`;
+import ChatMessage from './ChatMessage'; // Adicione esta importação
+import initialMessage from './InitialMessage'; // Adicione esta importação
+import instructions from './Instructions';
+import MessageInput from './MessageInput';
+import Image from 'next/image';
 
 
 const MessageCreator = ({ threadId, assistantId }) => {
@@ -35,10 +13,11 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState(null);
   const [showCopiedAlert, setShowCopiedAlert] = useState(false);
-  const [copied, setCopied] = useState(null); // Adicionado estado para 'copied'
-  const [isHovered, setIsHovered] = useState(false); // Novo estado para controle de hover
-  const [showTooltip, setShowTooltip] = useState(false); // Novo estado para o tooltip
-
+  const [copied, setCopied] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [imageUrls, setImageUrls] = useState({});
+  const [copiedImageMessage, setCopiedImageMessage] = useState('');
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -46,32 +25,27 @@ const MessageCreator = ({ threadId, assistantId }) => {
       createNewMessage();
     }
   };
+
   const getMessageType = (role) => {
     return role === 'user' ? 'User:' : 'Assistant:';
   };
 
-  const initialMessage = {
-    id: 'initial-message',
-    role: 'assistant',
-    content: [{
-      text: {
-        value: `Hello there! 👋 I'm thrilled to welcome you to our tutoring service where I'm here to provide you a helping hand with your IB Physics queries. 🎓 Whether you're puzzling over a tricky problem, prepping for exams, or getting your Physics IA off the ground, I'm here to guide you through it all with friendly and insightful support. ✨
+  const formatinicialMessage = (message) => {
+    const boldRegex = /\*\*(.*?)\*\*/g;
 
-Don't hesitate to reach out with whatever's on your mind. Here's how I can assist you:
-
-- Struggling with homework? Let's work through it together step-by-step. 📚
-- IA got you perplexed? I can help clarify your ideas or review your draft. 🔍
-- Exam prep making you anxious? I've got strategies to boost your confidence and performance. 🏆
-- Curious about real-world physics? Let's discuss how it all applies beyond the classroom. 🌍
-
-So, how can I help you shine in IB Physics today? Let me know by picking an option or ask away about anything else physics-related! 😊
-
-Just remember, no question is too small and every challenge is an opportunity to learn and grow. Let's get started!`
+    return message.split(boldRegex).map((part, index) => {
+      if (index % 2 === 1) {
+        return <strong key={index}>{part}</strong>;
+      } else {
+        return part.split('\n').map((item, key) => (
+          <React.Fragment key={key}>
+            {item}
+            <br />
+          </React.Fragment>
+        ));
       }
-    }]
+    });
   };
-
-
 
   const createNewMessage = async () => {
     setLoading(true);
@@ -94,7 +68,6 @@ Just remember, no question is too small and every challenge is an opportunity to
       console.error("Error creating message:", error);
     }
   };
-
 
   const runAssistant = async () => {
     try {
@@ -151,24 +124,79 @@ Just remember, no question is too small and every challenge is an opportunity to
     }
   };
 
-  const formatMessage = (message) => {
-    const boldRegex = /\*\*(.*?)\*\*/g;
-
-    return message.split(boldRegex).map((part, index) => {
-      if (index % 2 === 1) {
-        return <strong key={index}>{part}</strong>;
-      } else {
-        return part.split('\n').map((item, key) => (
-          <React.Fragment key={key}>
-            {item}
-            <br />
-          </React.Fragment>
-        ));
-      }
-    });
+  const fetchImage = async (fileId) => {
+    try {
+      const res = await fetch(`/api/getImages?fileId=${fileId}`);
+      const data = await res.json();
+      return data.image;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
   };
 
+  const loadImage = async (fileId) => {
+    if (!imageUrls[fileId]) {
+      const imageUrl = await fetchImage(fileId);
+      setImageUrls(prev => ({ ...prev, [fileId]: imageUrl }));
+    }
+  };
 
+  const formatMessage = (messageContent) => {
+    const contentArray = Array.isArray(messageContent) ? messageContent : [messageContent];
+
+    return contentArray.map((content, index) => {
+      if (content.type === "text") {
+        const boldRegex = /\*\*(.*?)\*\*/g;
+        return (
+          <span key={index}>
+            {content.text.value.split(boldRegex).map((part, i) => {
+              if (i % 2 === 1) {
+                return <strong key={i}>{part}</strong>;
+              } else {
+                const lines = part.split('\n');
+                return lines.map((line, lineIndex) => {
+                  // Replace only leading whitespace and preserve spaces around colons
+                  const processedLine = line.replace(/^\s+/, '').replace(/:\s/g, ': ');
+                  return (
+                    <React.Fragment key={lineIndex}>
+                      {processedLine}
+                      {lineIndex !== lines.length - 1 && <br />}
+                    </React.Fragment>
+                  );
+                });
+              }
+            })}
+          </span>
+        );
+      } else if (content.type === "image_file") {
+        const fileId = content.image_file.file_id;
+        loadImage(fileId);
+
+        if (imageUrls[fileId]) {
+          return (
+            <div style={{ position: 'relative' }} key={index}>
+              <img src={imageUrls[fileId]} alt="Image" />
+              <img
+                src="/copy.png"
+                alt="Copy Image"
+                style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  cursor: 'pointer',
+                  // Estilize conforme necessário
+                }}
+                onClick={() => copyImageUrlToClipboard(imageUrls[fileId])}
+              />
+            </div>
+          );
+        } else {
+          return <p key={index}>Loading image...</p>;
+        }
+      }
+    }).filter(Boolean); // Filtrar elementos nulos ou undefined
+  };
 
   const messagesEndRef = useRef(null);
   const loadingRef = useRef(null);
@@ -181,12 +209,30 @@ Just remember, no question is too small and every challenge is an opportunity to
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
+  const copyToClipboard = (messageContent, messageId) => {
+    let textToCopy = '';
+    messageContent.forEach(content => {
+      if (content.type === "text") {
+        textToCopy += content.text.value + '\n';
+      }
+    });
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      setCopiedImageMessage('Text Copied!');
       setShowCopiedAlert(true);
-      setTimeout(() => setShowCopiedAlert(false), 2000); // Esconde o aviso após 2 segundos
+      setTimeout(() => setShowCopiedAlert(false), 2000);
     }).catch(err => {
-      console.error('Erro ao copiar texto: ', err);
+      console.error('Error copying text:', err);
+    });
+  };
+
+  const copyImageUrlToClipboard = (imageUrl) => {
+    navigator.clipboard.writeText(imageUrl).then(() => {
+      setCopiedImageMessage('Link of the image Copied');
+      setShowCopiedAlert(true);
+      setTimeout(() => setShowCopiedAlert(false), 2000);
+    }).catch(err => {
+      console.error('Erro ao copiar a URL da imagem:', err);
     });
   };
 
@@ -194,57 +240,55 @@ Just remember, no question is too small and every challenge is an opportunity to
     scrollToBottom();
   }, [messages, loading]);
 
+  const textareaRef = useRef(null);
+
+  const sendMessage = () => {
+    if (!loading && content) {
+      createNewMessage(); // This function should set 'loading' to true
+    }
+  };
+
+  useEffect(() => {
+    if (!loading) {
+      setContent(''); // Clear the textarea when loading is done
+    }
+  }, [loading]);
+
+
   return (
     <div className="flex justify-center items-center h-screen bg-white">
       <div className="w-[950px] p-4 bg-white rounded-lg shadow-md mx-auto">
-        <div className="mb-4 overflow-y-auto h-[400px] bg-white">
+        <div className="mb-4 overflow-y-auto h-[500px] bg-white">
           {/* Renderizar a mensagem inicial com a imagem do assistente */}
-          <div className={`relative flex items-center p-5 my-5 mr-4 rounded-lg bg-gray-50 text-black`}>
+          <div className={`relative flex items-start p-5 my-5 mr-4 rounded-lg bg-gray-50 text-black`}>
             <img src="/physics.jpeg" alt="Assistant" className="h-16 w-16 mr-4 rounded-full" />
-            <div className="flex-grow" >
+            <div className="flex-grow">
               <p><strong>{getMessageType(initialMessage.role)}</strong></p>
-              <div>{formatMessage(initialMessage.content[0].text.value)}</div>
+              <div>{formatinicialMessage(initialMessage.content[0].text.value)}</div>
             </div>
           </div>
 
-          {/* Renderizar as mensagens do chat */}
+          {/* Renderizar as mensagens do chat usando o componente ChatMessage */}
           {messages && Array.isArray(messages) && (
             [...messages].reverse().map((message) => (
-              <div key={message.id} className={`relative flex items-start p-5 my-5 mr-4 rounded-lg ${message.role === 'assistant' ? 'bg-gray-50' : 'bg-gray-100'} text-black`}>
-                {message.role === 'assistant' ? (
-                  <>
-                    <img src="/physics.jpeg" alt="Assistant" className="h-16 w-16 mr-4 rounded-full" />
-                    <div className="flex-grow">
-                      <p><strong>{getMessageType(message.role)}</strong></p>
-                      <p>{formatMessage(message.content[0].text.value)}</p>
-                    </div>
-                    <img
-                      src="/copy.png"
-                      alt="Copy"
-                      className={`absolute top-0 right-0 h-6 w-6 m-2 cursor-pointer hover:opacity-80 ${copied === message.id ? 'text-green-500' : ''}`}
-                      onClick={() => copyToClipboard(message.content[0].text.value, message.id)}
-                    />
-                    {showCopiedAlert && (
-                      <div className="fixed top-10 right-10 bg-green-500 text-white py-2 px-4 rounded-md">
-                        Text Copied!
-                      </div>
-                    )}
-
-                  </>
-
-                ) : (
-                  // User's message layout
-                  <>
-                    <img src="/user.png" alt="User" className="h-16 w-16 mr-4 rounded-full" />
-                    <div className="flex-grow">
-                      <p><strong>{getMessageType(message.role)}</strong></p>
-                      <p>{formatMessage(message.content[0].text.value)}</p>
-                    </div>
-                  </>
-                )}
-              </div>
+              <ChatMessage
+                key={message.id}
+                message={message}
+                copyToClipboard={copyToClipboard}
+                formatMessage={formatMessage}
+                getMessageType={getMessageType}
+                copied={copied}
+                showCopiedAlert={showCopiedAlert}
+                copiedImageMessage={copiedImageMessage}
+              />
             ))
           )}
+          {showCopiedAlert && (
+            <div className="fixed top-10 right-10 bg-green-500 text-white py-2 px-4 rounded-md">
+              {copiedImageMessage}
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
 
           {loading && (
@@ -254,54 +298,18 @@ Just remember, no question is too small and every challenge is an opportunity to
           )}
         </div>
 
-        <div className="relative">
-          <textarea
-            className="w-full p-2 mb-2 border border-gray-300 rounded-lg focus:outline-none focus:shadow-outline"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your Message"
-            style={{ paddingRight: '40px', paddingBottom: '20px' }}  // Mantém o espaço extra à direita e embaixo
-          />
-          <div
-            className="absolute bottom-4 right-2 cursor-pointer"
-            onClick={!loading && content ? createNewMessage : null}
-            onMouseEnter={() => { setIsHovered(true); setShowTooltip(true); }}  // Mostra o tooltip
-            onMouseLeave={() => { setIsHovered(false); setShowTooltip(false); }} // Esconde o tooltip
-          >
-            {loading ? (
-              <img src="/square.png" alt="Enviando" className="h-8 w-8" style={{ borderRadius: '20%', border: '2px solid white' }} />
-            ) : (
-              <img
-                src={isHovered ? "/arrow2.png" : "/arrow.png"}
-                alt="Enviar"
-                className="h-8 w-8"
-                style={{ borderRadius: '20%', border: '2px solid white' }}
-              />
-            )}
-
-            {showTooltip && (
-              <div style={{
-                position: 'absolute',
-                bottom: '40px',  // Ajuste para alinhar com o ícone
-                left: '50%',
-                transform: 'translateX(-50%)', // Centraliza o tooltip em relação ao ícone
-                backgroundColor: 'black',
-                color: 'white',
-                padding: '5px',
-                borderRadius: '4px',
-                fontWeight: 'bold',
-                whiteSpace: 'nowrap',
-                fontSize: '12px',  // Garante que o texto fique em uma única linha
-              }}>
-                Send Message
-              </div>
-            )}
-          </div>
-        </div>
+        <MessageInput
+          content={content}
+          setContent={setContent}
+          sendMessage={sendMessage}
+          loading={loading}
+          isHovered={isHovered}
+          setIsHovered={setIsHovered}
+          showTooltip={showTooltip}
+          setShowTooltip={setShowTooltip}
+        />
       </div>
     </div>
   );
-};
-
+}
 export default MessageCreator;

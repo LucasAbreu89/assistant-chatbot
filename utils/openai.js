@@ -122,3 +122,15 @@ export const createMessageWithFile = async ({ threadId, content, fileId }) => {
     throw error;
   }
 };
+
+export const fetchImageFromOpenAI = async (fileId) => {
+  try {
+    const response = await openai.files.content(fileId);
+    const image_data = await response.arrayBuffer();
+    const image_data_buffer = Buffer.from(image_data);
+    return image_data_buffer.toString('base64');
+  } catch (error) {
+    console.error("Error fetching image from OpenAI:", error);
+    throw error;
+  }
+};
