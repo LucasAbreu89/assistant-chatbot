@@ -4,18 +4,20 @@ const initialMessage = {
     role: 'assistant',
     content: [{
         text: {
-            value: `Hello there! 👋 I'm thrilled to welcome you to our tutoring service where I'm here to provide you a helping hand with your IB Physics queries. 🎓 Whether you're puzzling over a tricky problem, prepping for exams, or getting your Physics IA off the ground, I'm here to guide you through it all with friendly and insightful support. ✨
+            value: `Hello there! 👋 Welcome to our cutting-edge IB Physics support platform. As your dedicated AI companion, I'm equipped to enlighten and inspire your journey through the wonders of physics. 🚀
 
-Don't hesitate to reach out with whatever's on your mind. Here's how I can assist you:
-
-- Struggling with homework? Let's work through it together step-by-step. 📚
-- IA got you perplexed? I can help clarify your ideas or review your draft. 🔍
-- Exam prep making you anxious? I've got strategies to boost your confidence and performance. 🏆
-- Curious about real-world physics? Let's discuss how it all applies beyond the classroom. 🌍
-
-So, how can I help you shine in IB Physics today? Let me know by picking an option or ask away about anything else physics-related! 😊
-
-Just remember, no question is too small and every challenge is an opportunity to learn and grow. Let's get started!`
+            Feeling stuck with your studies or in search of guidance? Look no further—here's a glimpse of how I can empower you:
+            
+            •⁠  ⁠Challenged by homework or complex topics? We'll tackle them with thorough, step-by-step explanations. 📘
+            •⁠  ⁠Delving into your Physics IA? I'll offer insights to refine your research question and elevate your analysis. 🎯
+            •⁠  ⁠Preparing for your exams? Let's build confidence with precision-timed mock exams, strategic advice, and focused revision. 🛠️
+            •⁠  ⁠Intrigued by physics in action? We'll explore the profound ties between syllabus concepts and real-world phenomena. 🔬
+            
+            What's on your mind today? Choose an option to dive in, or feel free to ask any physics-related question. I'm here to ensure you excel. 🌟
+            
+            Remember, curiosity drives discovery, and every query is a stepping stone towards mastering IB Physics. Ready to embark on this intellectual adventure? Let's begin! 🌱
+            
+            And if you seek a personal touch, our team at ++tutors awaits, ready to provide one-on-one tutoring tailored to your academic needs. 📈`
         }
     }]
 };

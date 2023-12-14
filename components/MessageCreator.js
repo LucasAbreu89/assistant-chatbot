@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage'; // Adicione esta importação
 import initialMessage from './InitialMessage'; // Adicione esta importação
-import instructions from './Instructions';
+import instructions from './Instruct';
 import MessageInput from './MessageInput';
 import Image from 'next/image';
 
@@ -27,7 +27,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
   };
 
   const getMessageType = (role) => {
-    return role === 'user' ? 'User:' : 'Assistant:';
+    return role === 'user' ? 'User:' : 'IB PhysiAI:';
   };
 
   const formatinicialMessage = (message) => {
@@ -261,7 +261,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
         <div className="mb-4 overflow-y-auto h-[500px] bg-white">
           {/* Renderizar a mensagem inicial com a imagem do assistente */}
           <div className={`relative flex items-start p-5 my-5 mr-4 rounded-lg bg-gray-50 text-black`}>
-            <img src="/physics.jpeg" alt="Assistant" className="h-16 w-16 mr-4 rounded-full" />
+            <img src="/physics.jpeg" alt="IB PhysiAI" className="h-16 w-16 mr-4 rounded-full" />
             <div className="flex-grow">
               <p><strong>{getMessageType(initialMessage.role)}</strong></p>
               <div>{formatinicialMessage(initialMessage.content[0].text.value)}</div>

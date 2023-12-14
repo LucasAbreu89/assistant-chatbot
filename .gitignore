@@ -35,13 +35,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/components/ThreadCreator.js
-/components/AssistantRunner1.js
-/components/FileUploader_so_file1.js
-/components/FileUploader.js
-/components/MessageCreator2.js
-/components/RunStatusChecker1.js
-/components/ShowMessagesButton1.js
-/components/MessageCreator_old.js
-/components/MessageCreator_before_components.js
 
+components/old_components/AssistantRunner2.js
+components/old_components/FileUploader_so_file1.js
+components/old_components/FileUploader.js
+components/old_components/MessageCreator_before_components.js
+components/old_components/MessageCreator_old.js
+components/old_components/MessageCreator2.js
+components/old_components/RunStatusChecker1.js
+components/old_components/ShowMessagesButton1.js
+components/old_components
