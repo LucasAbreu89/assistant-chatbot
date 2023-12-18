@@ -29,18 +29,21 @@ export const createThread = async () => {
   }
 };
 
-export const createMessage = async ({ threadId, content }) => {
+export const createMessage = async ({ threadId, content, fileIds }) => {
   try {
-    const message = await openai.beta.threads.messages.create(threadId, {
-      role: "user",
-      content: content,
-    });
+    const messageData = { role: "user", content: content };
+    if (fileIds && fileIds.length) {
+      messageData.file_ids = fileIds;
+    }
+
+    const message = await openai.beta.threads.messages.create(threadId, messageData);
     return message;
   } catch (error) {
     console.error("Error in createMessage:", error);
     throw error;
   }
 };
+
 
 export const runAssistant = async ({ assistantId, threadId, instructions }) => {
   try {

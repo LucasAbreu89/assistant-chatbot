@@ -4,6 +4,8 @@ import initialMessage from './InitialMessage'; // Adicione esta importação
 import instructions from './Instruct';
 import MessageInput from './MessageInput';
 import Image from 'next/image';
+import copy from 'copy-to-clipboard';
+import FileUploader from './FileUploader';
 
 
 const MessageCreator = ({ threadId, assistantId }) => {
@@ -18,6 +20,8 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [imageUrls, setImageUrls] = useState({});
   const [copiedImageMessage, setCopiedImageMessage] = useState('');
+  const [fileIds, setFileIds] = useState([]);
+
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -50,11 +54,15 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const createNewMessage = async () => {
     setLoading(true);
     try {
-      // Envia a mensagem
+      // Passa o array de fileIds diretamente
+      const messageData = { threadId, content, fileIds };
+
+      console.log("Sending message with file IDs:", messageData);
+
       const res = await fetch('/api/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threadId, content }),
+        body: JSON.stringify(messageData),
       });
       const data = await res.json();
       setMessage(data.message);
@@ -64,10 +72,12 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
       // Limpa a caixa de texto
       setContent('');
+
     } catch (error) {
       console.error("Error creating message:", error);
     }
   };
+
 
   const runAssistant = async () => {
     try {
@@ -187,7 +197,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
                   cursor: 'pointer',
                   // Estilize conforme necessário
                 }}
-                onClick={() => copyImageUrlToClipboard(imageUrls[fileId])}
+                onClick={() => copyImageToClipboard(content.image_file.file_id)}
               />
             </div>
           );
@@ -226,15 +236,30 @@ const MessageCreator = ({ threadId, assistantId }) => {
     });
   };
 
-  const copyImageUrlToClipboard = (imageUrl) => {
-    navigator.clipboard.writeText(imageUrl).then(() => {
-      setCopiedImageMessage('Link of the image Copied');
+  const copyImageToClipboard = async (fileId) => {
+    try {
+      const imageUrl = imageUrls[fileId];
+      if (!imageUrl) {
+        throw new Error('Imagem não encontrada');
+      }
+
+      // Busca a imagem como Blob
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+
+      // Copia a imagem como Blob para a área de transferência
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+      ]);
+
+      setCopiedImageMessage('Image Copied!');
       setShowCopiedAlert(true);
       setTimeout(() => setShowCopiedAlert(false), 2000);
-    }).catch(err => {
-      console.error('Erro ao copiar a URL da imagem:', err);
-    });
+    } catch (error) {
+      console.error('Erro ao copiar a imagem:', error);
+    }
   };
+
 
   useEffect(() => {
     scrollToBottom();
@@ -253,6 +278,14 @@ const MessageCreator = ({ threadId, assistantId }) => {
       setContent(''); // Clear the textarea when loading is done
     }
   }, [loading]);
+
+  const handleFileUpload = (newFileId) => {
+    setFileIds(prevFileIds => [...prevFileIds, newFileId]);
+  };
+
+  useEffect(() => {
+    console.log("File IDs atualizados:", fileIds);
+  }, [fileIds]);
 
 
   return (
@@ -279,7 +312,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
                 getMessageType={getMessageType}
                 copied={copied}
                 showCopiedAlert={showCopiedAlert}
-                copiedImageMessage={copiedImageMessage}
+                copyImageToClipboard={copyImageToClipboard}
               />
             ))
           )}
@@ -308,6 +341,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
           showTooltip={showTooltip}
           setShowTooltip={setShowTooltip}
         />
+        {/* <FileUploader onFileUpload={handleFileUpload} /> */}
       </div>
     </div>
   );
