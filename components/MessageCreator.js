@@ -6,6 +6,7 @@ import MessageInput from './MessageInput';
 import Image from 'next/image';
 import copy from 'copy-to-clipboard';
 import FileUploader from './FileUploader';
+import FeedbackForm from './FeedbackForm'; // Supondo que você tenha criado esse componente
 
 
 const MessageCreator = ({ threadId, assistantId }) => {
@@ -21,14 +22,6 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const [imageUrls, setImageUrls] = useState({});
   const [copiedImageMessage, setCopiedImageMessage] = useState('');
   const [fileIds, setFileIds] = useState([]);
-
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      createNewMessage();
-    }
-  };
 
   const getMessageType = (role) => {
     return role === 'user' ? 'User:' : 'IB PhysiAI:';
@@ -193,7 +186,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
                 style={{
                   position: 'absolute',
                   top: '10px',
-                  right: '10px',
+                  left: '10px',
                   cursor: 'pointer',
                   // Estilize conforme necessário
                 }}
@@ -340,9 +333,11 @@ const MessageCreator = ({ threadId, assistantId }) => {
           setIsHovered={setIsHovered}
           showTooltip={showTooltip}
           setShowTooltip={setShowTooltip}
+
         />
         {/* <FileUploader onFileUpload={handleFileUpload} /> */}
       </div>
+
     </div>
   );
 }

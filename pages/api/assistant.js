@@ -1,4 +1,4 @@
-import { NextApiResponse, NextApiRequest } from "next";
+
 import { getAssistant } from "../../utils/openai";
 
 export default async function handler(req, res) {

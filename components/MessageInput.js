@@ -30,6 +30,12 @@ const MessageInput = ({ content, setContent, sendMessage, loading, isHovered, se
                     adjustTextareaHeight();
                 }}
                 placeholder="Type your Message"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault(); // Evita a quebra de linha
+                        sendMessage();
+                    }
+                }}
             />
             <div
                 className="absolute right-2 bottom-2 cursor-pointer"

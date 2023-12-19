@@ -1,41 +1,55 @@
 // pages/api/sendEmail.js
-
-import formData from 'form-data';
-import Mailgun from 'mailgun.js';
+import SibApiV3Sdk from 'sib-api-v3-sdk';
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { type } = req.body; // Capturando o tipo de clique
+        const { type, feedback, messageContent } = req.body;
 
         try {
-            const mailgun = new Mailgun(formData);
-            const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY });
+            let defaultClient = SibApiV3Sdk.ApiClient.instance;
 
-            let subject, text;
+            // Configure API key authorization: api-key
+            let apiKey = defaultClient.authentications['api-key'];
+            apiKey.apiKey = process.env.SENDINBLUE_API_KEY;
 
+            let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+            let subject, htmlContent;
+
+            // Definindo o assunto e conteúdo do e-mail com base no tipo de feedback
             if (type === 'good') {
-                subject = "Someone liked your bot";
-                text = "Hey, someone just clicked the good button on your bot!";
+                subject = "Positive Feedback Received";
+                htmlContent = `<html><body>
+                    <p>Someone liked your bot. Here's their feedback:</p>
+                    <blockquote>${feedback}</blockquote>
+
+                    </body></html>`;
             } else if (type === 'bad') {
-                subject = "Someone disliked your bot";
-                text = "Hey, someone just clicked the bad button on your bot!";
+                subject = "Negative Feedback Received";
+                htmlContent = `<html><body>
+                    <p>Someone disliked your bot. Here's their feedback:</p>
+                    <blockquote>${feedback}</blockquote>
+
+                    </body></html>`;
             } else {
-                // Caso o tipo não seja nem 'good' nem 'bad'
                 console.error('Invalid type received:', type);
                 return res.status(400).json({ message: 'Invalid type specified' });
             }
 
-            const html = `<h1>${text}</h1>`;
+            let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+            sendSmtpEmail.sender = {
+                email: 'okatanani@gmail.com',
+                name: 'User IB PhysiAI'
+            };
+            sendSmtpEmail.to = [{
+                email: 'ok@katanani.com',
+                name: 'Recipient Name'
+            }];
+            sendSmtpEmail.subject = subject;
+            sendSmtpEmail.htmlContent = htmlContent;
 
-            const response = await mg.messages.create('sandbox777ed467b4b24e7b846cabf6ffc7bf2d.mailgun.org', {
-                from: "Excited User <mailgun@sandbox777ed467b4b24e7b846cabf6ffc7bf2d.mailgun.org>",
-                to: ["lag.programmer@gmail.com", "ok@plusplustutors.com"],
-                subject,
-                text,
-                html
-            });
-
-            console.log('Email sent:', response);
+            await apiInstance.sendTransacEmail(sendSmtpEmail);
+            console.log('Email sent successfully');
             res.status(200).json({ message: 'Email sent successfully!' });
         } catch (error) {
             console.error('Error sending email:', error);
