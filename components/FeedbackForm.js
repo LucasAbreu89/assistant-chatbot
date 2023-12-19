@@ -13,7 +13,7 @@ const FeedbackForm = ({ onSubmitFeedback, type, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg shadow-lg w-[650px] w-full">
+            <div className="bg-white rounded-lg shadow-lg w-[650px]">
                 {/* Container interno para o padding */}
                 <div className="p-6">
                     <h3 className="text-lg font-semibold">Provide additional feedback</h3>
