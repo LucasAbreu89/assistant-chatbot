@@ -11,7 +11,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className='bg-red-500'>Welcome to the Assistant Bot</h1> {/* Título alterado */}
+
       <AssistantFetcher setThreadId={setThreadId} />
       {threadId && <MessageCreator threadId={threadId} assistantId={assistantId} />}
     </div>

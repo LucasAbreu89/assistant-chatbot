@@ -7,7 +7,7 @@ import Image from 'next/image';
 import copy from 'copy-to-clipboard';
 import FileUploader from './FileUploader';
 import FeedbackForm from './FeedbackForm'; // Supondo que você tenha criado esse componente
-
+import styles from '@/styles/MessageCreator.module.css'
 
 const MessageCreator = ({ threadId, assistantId }) => {
   const [content, setContent] = useState('');
@@ -282,9 +282,9 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
 
   return (
-    <div className="flex justify-center items-center h-screen bg-white">
-      <div className="w-[950px] p-4 bg-white rounded-lg shadow-md mx-auto">
-        <div className="mb-4 overflow-y-auto h-[500px] bg-white">
+    <div className={`flex justify-center items-center h-screen ${styles.messagecreator}`}>
+      <div className={`w-[950px] p-4 bg-white rounded-lg shadow-md mx-auto  ${styles.messagecreator}`}>
+        <div className={`mb-4 overflow-y-auto h-[500px] bg-white ${styles.textareaa}`}>
           {/* Renderizar a mensagem inicial com a imagem do assistente */}
           <div className={`relative flex items-start p-5 my-5 mr-4 rounded-lg bg-gray-50 text-black`}>
             <img src="/physics.jpeg" alt="IB PhysiAI" className="h-16 w-16 mr-4 rounded-full" />
@@ -306,6 +306,8 @@ const MessageCreator = ({ threadId, assistantId }) => {
                 copied={copied}
                 showCopiedAlert={showCopiedAlert}
                 copyImageToClipboard={copyImageToClipboard}
+                messagesHistory={messages} // Adicione esta linha
+
               />
             ))
           )}

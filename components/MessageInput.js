@@ -18,7 +18,7 @@ const MessageInput = ({ content, setContent, sendMessage, loading, isHovered, se
     }, [content]);
 
     return (
-        <div className="relative flex items-center">
+        <div className="relative flex items-center" style={{ position: 'relative' }}>
             <textarea
                 disabled={loading}
                 ref={textareaRef}

@@ -1,0 +1,19 @@
+/* MessageCreator.css ou MessageCreator.module.css */
+
+/* Estilo padrão para a largura acima de 550px */
+.messagecreator {
+    background-color: white;
+  }
+  
+  /* Estilo para telas com largura menor que 550px */
+  @media (max-width: 550px) {
+    .messagecreator {
+      background-color: rgb(255, 255, 255);
+      height: 100%;
+    }
+    .textareaa{
+      height: 80vh;
+    }
+  }
+  
+  

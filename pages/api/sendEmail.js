@@ -3,7 +3,9 @@ import SibApiV3Sdk from 'sib-api-v3-sdk';
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { type, feedback, messageContent } = req.body;
+        const { type, feedback, messagesHistory } = req.body;
+        // console.log("Mensagens recebidas:", JSON.stringify(messagesHistory, null, 2));
+
 
         try {
             let defaultClient = SibApiV3Sdk.ApiClient.instance;
@@ -22,19 +24,40 @@ export default async function handler(req, res) {
                 htmlContent = `<html><body>
                     <p>Someone liked your bot. Here's their feedback:</p>
                     <blockquote>${feedback}</blockquote>
-
-                    </body></html>`;
+                    `;
             } else if (type === 'bad') {
                 subject = "Negative Feedback Received";
                 htmlContent = `<html><body>
                     <p>Someone disliked your bot. Here's their feedback:</p>
                     <blockquote>${feedback}</blockquote>
-
-                    </body></html>`;
+                    `;
             } else {
                 console.error('Invalid type received:', type);
                 return res.status(400).json({ message: 'Invalid type specified' });
             }
+
+            let historyHtml = '<p>Recent chat history:</p><ul>';
+
+            // Pegar as duas primeiras mensagens do array original
+            const firstTwoMessages = messagesHistory.slice(0, 20);
+
+            // Inverter a ordem das mensagens para que apareçam corretamente no e-mail
+            firstTwoMessages.reverse().forEach(msg => {
+                const sender = msg.role; // 'user' ou 'assistant'
+
+                // Verifica todos os elementos no array 'content'
+                msg.content.forEach(contentItem => {
+                    if (contentItem.type === 'text') {
+                        historyHtml += `<li>${sender}: ${contentItem.text.value}</li>`;
+                    } else if (contentItem.type === 'image_file') {
+                        historyHtml += `<li>${sender}: Image sent</li>`;
+                    }
+                });
+            });
+
+            historyHtml += '</ul>';
+            htmlContent += historyHtml;
+
 
             let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
             sendSmtpEmail.sender = {
@@ -42,7 +65,7 @@ export default async function handler(req, res) {
                 name: 'User IB PhysiAI'
             };
             sendSmtpEmail.to = [{
-                email: 'ok@katanani.com',
+                email: 'ok@plusplustutors.com',
                 name: 'Recipient Name'
             }];
             sendSmtpEmail.subject = subject;

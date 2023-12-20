@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import FeedbackForm from './FeedbackForm'; // Supondo que você tenha criado esse componente
 
-const ChatMessage = ({ message, copyToClipboard, formatMessage, getMessageType }) => {
+const ChatMessage = ({ message, copyToClipboard, formatMessage, getMessageType, messagesHistory }) => {
     const [showFeedbackForm, setShowFeedbackForm] = useState(false);
     const [feedbackType, setFeedbackType] = useState('');
+    const [feedbackSubmitted, setFeedbackSubmitted] = useState(false); // Estado geral para controle de feedback
 
     const handleFeedbackClick = (type) => {
         setFeedbackType(type);
         setShowFeedbackForm(true);
+        setFeedbackSubmitted(true); // Marca que o feedback foi submetido
     };
+
 
     const onSubmitFeedback = async (feedbackData) => {
         try {
@@ -20,13 +23,14 @@ const ChatMessage = ({ message, copyToClipboard, formatMessage, getMessageType }
                 body: JSON.stringify({
                     type: feedbackData.type,
                     feedback: feedbackData.feedback,
-                    messageContent: message.content // Adiciona o conteúdo da mensagem ao e-mail
+                    messageContent: message.content, // Adiciona o conteúdo da mensagem ao e-mail
+                    messagesHistory: messagesHistory.slice(-10) // Envia as últimas 10 mensagens
+
                 }),
             });
 
             const data = await response.json();
             console.log('Response from server:', data.message);
-
         } catch (error) {
             console.error('Error sending request to server:', error);
         }
@@ -50,29 +54,44 @@ const ChatMessage = ({ message, copyToClipboard, formatMessage, getMessageType }
                 </div>
 
                 {message.role === 'assistant' && (
-                    <div className="flex mt-3"> {/* Alterado para mt-2 para um espaçamento na parte inferior */}
-                        <img
-                            src="/like.png"
-                            alt="Good"
-                            className="h-6 w-6 cursor-pointer hover:opacity-80 mr-2"
-                            onClick={() => handleFeedbackClick('good')}
-                        />
-                        <img
-                            src="/deslike.png"
-                            alt="Bad"
-                            className="h-6 w-6 cursor-pointer hover:opacity-80 mr-2"
-                            onClick={() => handleFeedbackClick('bad')}
-                        />
+                    <div className="flex mt-3">
+                        {!feedbackSubmitted && (
+                            <>
+                                {feedbackType !== 'bad' && (
+                                    <img
+                                        src="/like.png"
+                                        alt="Good"
+                                        className="h-6 w-6 cursor-pointer hover:opacity-80 mr-2"
+                                        onClick={() => handleFeedbackClick('good')}
+                                    />
+                                )}
+                                {feedbackType !== 'good' && (
+                                    <img
+                                        src="/dislike.png"
+                                        alt="Bad"
+                                        className="h-6 w-6 cursor-pointer hover:opacity-80 mr-2"
+                                        onClick={() => handleFeedbackClick('bad')}
+                                    />
+                                )}
+                            </>
+                        )}
+                        {feedbackSubmitted && (
+                            <img
+                                src={feedbackType === 'good' ? "/like.png" : "/dislike.png"}
+                                alt={feedbackType === 'good' ? "Good" : "Bad"}
+                                className="h-6 w-6 opacity-50 mr-2"
+                            />
+                        )}
                         <img
                             src="/copy.png"
                             alt="Copy"
                             className="h-5 w-5 cursor-pointer hover:opacity-80 mr-2"
                             style={{ marginLeft: '3px', marginTop: '1px' }}
-
                             onClick={() => copyToClipboard(message.content, message.id)}
                         />
                     </div>
                 )}
+
             </div>
 
             {showFeedbackForm && (
