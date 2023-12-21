@@ -3,11 +3,32 @@ import ChatMessage from './ChatMessage'; // Adicione esta importação
 import initialMessage from './InitialMessage'; // Adicione esta importação
 import instructions from './Instruct';
 import MessageInput from './MessageInput';
-import Image from 'next/image';
 import copy from 'copy-to-clipboard';
 import FileUploader from './FileUploader';
 import FeedbackForm from './FeedbackForm'; // Supondo que você tenha criado esse componente
 import styles from '@/styles/MessageCreator.module.css'
+
+const useWindowSize = () => {
+  const [windowSize, setWindowSize] = useState({
+    width: undefined,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return windowSize;
+};
+
 
 const MessageCreator = ({ threadId, assistantId }) => {
   const [content, setContent] = useState('');
@@ -22,6 +43,9 @@ const MessageCreator = ({ threadId, assistantId }) => {
   const [imageUrls, setImageUrls] = useState({});
   const [copiedImageMessage, setCopiedImageMessage] = useState('');
   const [fileIds, setFileIds] = useState([]);
+  const [firstMessageSent, setFirstMessageSent] = useState(false);
+  const size = useWindowSize();
+  const [expandedImageUrl, setExpandedImageUrl] = useState(null);
 
   const getMessageType = (role) => {
     return role === 'user' ? 'User:' : 'IB PhysiAI:';
@@ -65,12 +89,12 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
       // Limpa a caixa de texto
       setContent('');
+      setFirstMessageSent(true);
 
     } catch (error) {
       console.error("Error creating message:", error);
     }
   };
-
 
   const runAssistant = async () => {
     try {
@@ -117,6 +141,9 @@ const MessageCreator = ({ threadId, assistantId }) => {
       } else {
         console.error("Formato de resposta inesperado:", data);
       }
+      if (data.messages && Array.isArray(data.messages.data) && data.messages.data.length > 0) {
+        setFirstMessageSent(true);
+      }
     } catch (error) {
       console.error("Error fetching messages:", error);
     } finally {
@@ -147,6 +174,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
   const formatMessage = (messageContent) => {
     const contentArray = Array.isArray(messageContent) ? messageContent : [messageContent];
+    const isMobile = size.width <= 550;
 
     return contentArray.map((content, index) => {
       if (content.type === "text") {
@@ -179,19 +207,26 @@ const MessageCreator = ({ threadId, assistantId }) => {
         if (imageUrls[fileId]) {
           return (
             <div style={{ position: 'relative' }} key={index}>
-              <img src={imageUrls[fileId]} alt="Image" />
               <img
-                src="/copy.png"
-                alt="Copy Image"
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  left: '10px',
-                  cursor: 'pointer',
-                  // Estilize conforme necessário
-                }}
-                onClick={() => copyImageToClipboard(content.image_file.file_id)}
+                src={imageUrls[fileId]}
+                alt="Image"
+                onClick={() => isMobile && setExpandedImageUrl(imageUrls[fileId])}
+                style={{ cursor: isMobile ? 'pointer' : 'default' }}
               />
+              {!isMobile && (
+                <img
+                  src="/copy.png"
+                  alt="Copy Image"
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '10px',
+                    cursor: 'pointer',
+                    // Estilize conforme necessário
+                  }}
+                  onClick={() => copyImageToClipboard(content.image_file.file_id)}
+                />
+              )}
             </div>
           );
         } else {
@@ -255,8 +290,11 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, loading]);
+    if (firstMessageSent) {
+      scrollToBottom();
+    }
+  }, [messages, loading, firstMessageSent]);
+
 
   const textareaRef = useRef(null);
 
@@ -338,6 +376,25 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
         />
         {/* <FileUploader onFileUpload={handleFileUpload} /> */}
+        {expandedImageUrl && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000,
+            }}
+            onClick={() => setExpandedImageUrl(null)}
+          >
+            <img src={expandedImageUrl} alt="Expanded" style={{ maxHeight: '90%', maxWidth: '90%' }} />
+          </div>
+        )}
       </div>
 
     </div>

@@ -14,6 +14,7 @@ const AssistantFetcher = ({ setThreadId }) => {
       const res = await fetch(`/api/assistant?assistantId=${assistantId}`);
       const data = await res.json();
       setAssistant(data.assistant);
+      // console.log(data);
       console.log("ID do Assistente:", data.assistant.id);
       // Adiciona a chamada para criar a thread aqui
       createThread();

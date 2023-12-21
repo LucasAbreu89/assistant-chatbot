@@ -1,6 +1,5 @@
 // Em /pages/api/getImages.js
 import { fetchImageFromOpenAI } from "../../utils/openai";
-import { NextApiResponse, NextApiRequest } from "next";
 
 export default async function handler(req, res) {
     console.log("getImages API called with method:", req.method);

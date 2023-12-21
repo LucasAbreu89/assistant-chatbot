@@ -1,6 +1,5 @@
 // pages/api/run.js
 import { runAssistant } from "../../utils/openai";
-import { NextApiResponse, NextApiRequest } from "next";
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
