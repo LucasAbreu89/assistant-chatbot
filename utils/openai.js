@@ -47,16 +47,27 @@ export const createMessage = async ({ threadId, content, fileIds }) => {
 
 export const runAssistant = async ({ assistantId, threadId, instructions }) => {
   try {
+    const fullInstructions = instructions + " Important Instruction: This user doesn't understand LATEX, expressions in plain text. This is an IB Diploma student who is studying either Physics HL or SL";
+
+    // Log antes de enviar a requisição
+    // console.log("Running assistant with:", { assistantId, threadId, fullInstructions });
+
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
-      instructions: instructions,
+      instructions: fullInstructions,
     });
+
+    // Log para ver a resposta da OpenAI
+    console.log("Response from OpenAI:", run);
+
     return run;
   } catch (error) {
     console.error("Error in runAssistant:", error);
     throw error;
   }
 };
+
+
 
 export const runCheck = async ({ threadId, runId }) => {
   try {

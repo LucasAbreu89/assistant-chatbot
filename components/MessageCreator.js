@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage'; // Adicione esta importação
 import initialMessage from './InitialMessage'; // Adicione esta importação
-import instructions from './Instruct';
+// import instructions from './Instruct';
 import MessageInput from './MessageInput';
 import copy from 'copy-to-clipboard';
 import FileUploader from './FileUploader';
@@ -30,7 +30,7 @@ const useWindowSize = () => {
 };
 
 
-const MessageCreator = ({ threadId, assistantId }) => {
+const MessageCreator = ({ threadId, assistantId, instructions }) => {
   const [content, setContent] = useState('');
   const [message, setMessage] = useState(null);
   const [runId, setRunId] = useState(null);
@@ -98,6 +98,12 @@ const MessageCreator = ({ threadId, assistantId }) => {
 
   const runAssistant = async () => {
     try {
+      // Certifique-se de que instructions não é nulo
+      if (!instructions) {
+        console.error("Instructions are not set.");
+        return;
+      }
+
       const res = await fetch('/api/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,6 +116,7 @@ const MessageCreator = ({ threadId, assistantId }) => {
       console.error("Error running assistant:", error);
     }
   };
+
 
   const checkRunStatus = async (runId) => {
     try {

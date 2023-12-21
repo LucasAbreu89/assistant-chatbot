@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-const AssistantFetcher = ({ setThreadId }) => {
+const AssistantFetcher = ({ setThreadId, setInstructions }) => {
   const [assistant, setAssistant] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -14,17 +14,20 @@ const AssistantFetcher = ({ setThreadId }) => {
       const res = await fetch(`/api/assistant?assistantId=${assistantId}`);
       const data = await res.json();
       setAssistant(data.assistant);
-      // console.log(data);
+      if (data.assistant && data.assistant.instructions) {
+        setInstructions(data.assistant.instructions);
+      } else {
+        console.log('No instructions received from assistant data');
+      }
+      // console.log(data.assistant.instructions);
       console.log("ID do Assistente:", data.assistant.id);
-      // Adiciona a chamada para criar a thread aqui
-      createThread();
+      createThread(); // Chama createThread após definir as instruções
     } catch (error) {
       console.error("Error fetching assistant:", error);
-      setAssistant(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [assistantId, setInstructions]);
 
   useEffect(() => {
     fetchAssistant();
