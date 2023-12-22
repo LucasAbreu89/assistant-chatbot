@@ -62,7 +62,7 @@ export default async function handler(req, res) {
             let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
             sendSmtpEmail.sender = {
                 email: 'edu@plusplustutors.com',
-                name: 'User IB PhysiAI'
+                name: 'User Enlighten'
             };
             sendSmtpEmail.to = [{
                 email: 'ok@plusplustutors.com',

@@ -48,7 +48,7 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
   const [expandedImageUrl, setExpandedImageUrl] = useState(null);
 
   const getMessageType = (role) => {
-    return role === 'user' ? 'User:' : 'IB PhysiAI:';
+    return role === 'user' ? 'User:' : 'Enlighten:';
   };
 
   const formatinicialMessage = (message) => {
@@ -247,12 +247,17 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
   const loadingRef = useRef(null);
 
   const scrollToBottom = () => {
-    if (loading) {
-      loadingRef.current?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const messagesEnd = messagesEndRef.current;
+    const container = messagesEnd.parentElement;
+
+    if (messagesEnd && container) {
+      const distanceToScroll = messagesEnd.offsetTop - container.scrollTop - container.clientHeight;
+      if (distanceToScroll > 0) {
+        container.scrollTop += distanceToScroll;
+      }
     }
   };
+
 
   const copyToClipboard = (messageContent, messageId) => {
     let textToCopy = '';
@@ -332,7 +337,7 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
         <div className={`mb-4 overflow-y-auto h-[500px] bg-white ${styles.textareaa}`}>
           {/* Renderizar a mensagem inicial com a imagem do assistente */}
           <div className={`relative flex items-start p-5 my-5 mr-4 rounded-lg bg-gray-50 text-black`}>
-            <img src="/physics.jpeg" alt="IB PhysiAI" className="h-16 w-16 mr-4 rounded-full" />
+            <img src="/physics.jpeg" alt="Enlighten" className="h-16 w-16 mr-4 rounded-full" />
             <div className="flex-grow">
               <p><strong>{getMessageType(initialMessage.role)}</strong></p>
               <div>{formatinicialMessage(initialMessage.content[0].text.value)}</div>

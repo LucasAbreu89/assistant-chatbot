@@ -47,7 +47,7 @@ export const createMessage = async ({ threadId, content, fileIds }) => {
 
 export const runAssistant = async ({ assistantId, threadId, instructions }) => {
   try {
-    const fullInstructions = instructions + " IMPORTANT INSTRUCTION: This user doesn't understand LATEX, expressions in plain text. This is an IB Diploma student who is studying either Physics HL or SL";
+    const fullInstructions = instructions + "IMPORTANT NOTE: Please respond using only plain text. Avoid using LaTeX or any other specialized formatting. This is intended for an IB Diploma student studying Physics HL or SL, so keep explanations simple and straightforward.";
 
     // Log antes de enviar a requisição
     console.log("Running assistant with:", { fullInstructions });
