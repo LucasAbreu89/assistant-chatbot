@@ -7,6 +7,8 @@ import copy from 'copy-to-clipboard';
 import FileUploader from './FileUploader';
 import FeedbackForm from './FeedbackForm'; // Supondo que você tenha criado esse componente
 import styles from '@/styles/MessageCreator.module.css'
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css'; // Importar os estilos do KaTeX
 
 const useWindowSize = () => {
   const [windowSize, setWindowSize] = useState({
@@ -46,6 +48,8 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
   const [firstMessageSent, setFirstMessageSent] = useState(false);
   const size = useWindowSize();
   const [expandedImageUrl, setExpandedImageUrl] = useState(null);
+  const [extractedImageText, setExtractedImageText] = useState("");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const getMessageType = (role) => {
     return role === 'user' ? 'User:' : 'Enlighten:';
@@ -72,7 +76,10 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
     setLoading(true);
     try {
       // Passa o array de fileIds diretamente
-      const messageData = { threadId, content, fileIds };
+      const fullContent = extractedImageText
+        ? `${content}\n\n Extracted text from image: "${extractedImageText}"`
+        : content;
+      const messageData = { threadId, content: fullContent, fileIds }; // Usa o fullContent
 
       console.log("Sending message with file IDs:", messageData);
 
@@ -115,6 +122,8 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
     } catch (error) {
       console.error("Error running assistant:", error);
     }
+    setExtractedImageText(""); // Limpa o texto extraído após o envio
+
   };
 
 
@@ -183,6 +192,20 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
     const contentArray = Array.isArray(messageContent) ? messageContent : [messageContent];
     const isMobile = size.width <= 550;
 
+    const processLatex = (text) => {
+      return text.split(/(\\\[.*?\\\]|\\\(...*?\\\))/).map((part, i) => {
+        if (part.startsWith('\\[') && part.endsWith('\\]')) {
+          const latex = part.slice(2, -2);
+          return <BlockMath key={i} math={latex} />;
+        } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
+          const latex = part.slice(2, -2);
+          return <InlineMath key={i} math={latex} />;
+        } else {
+          return part;
+        }
+      });
+    };
+
     return contentArray.map((content, index) => {
       if (content.type === "text") {
         const boldRegex = /\*\*(.*?)\*\*/g;
@@ -194,11 +217,10 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
               } else {
                 const lines = part.split('\n');
                 return lines.map((line, lineIndex) => {
-                  // Replace only leading whitespace and preserve spaces around colons
                   const processedLine = line.replace(/^\s+/, '').replace(/:\s/g, ': ');
                   return (
                     <React.Fragment key={lineIndex}>
-                      {processedLine}
+                      {processLatex(processedLine)}
                       {lineIndex !== lines.length - 1 && <br />}
                     </React.Fragment>
                   );
@@ -229,7 +251,6 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
                     top: '10px',
                     left: '10px',
                     cursor: 'pointer',
-                    // Estilize conforme necessário
                   }}
                   onClick={() => copyImageToClipboard(content.image_file.file_id)}
                 />
@@ -242,6 +263,7 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
       }
     }).filter(Boolean); // Filtrar elementos nulos ou undefined
   };
+
 
   const messagesEndRef = useRef(null);
   const loadingRef = useRef(null);
@@ -330,6 +352,10 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
     console.log("File IDs atualizados:", fileIds);
   }, [fileIds]);
 
+  const clearImageOnSend = () => {
+    setImagePreviewUrl(null);  // Limpa o preview da imagem
+    setExtractedImageText(""); // Limpa o texto extraído
+  };
 
   return (
     <div className={`flex justify-center items-center h-screen ${styles.messagecreator}`}>
@@ -385,6 +411,8 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
           setIsHovered={setIsHovered}
           showTooltip={showTooltip}
           setShowTooltip={setShowTooltip}
+          setExtractedImageText={setExtractedImageText}
+          clearImageOnSend={clearImageOnSend}
 
         />
         {/* <FileUploader onFileUpload={handleFileUpload} /> */}

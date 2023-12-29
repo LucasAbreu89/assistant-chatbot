@@ -47,10 +47,11 @@ export const createMessage = async ({ threadId, content, fileIds }) => {
 
 export const runAssistant = async ({ assistantId, threadId, instructions }) => {
   try {
-    const fullInstructions = instructions + "IMPORTANT NOTE: Please respond using only plain text. Avoid using LaTeX or any other specialized formatting. This is intended for an IB Diploma student studying Physics HL or SL, so keep explanations simple and straightforward.";
+    const fullInstructions = instructions;
+    // const fullInstructions = instructions + "IMPORTANT NOTE: Please respond using only plain text. Avoid using LaTeX or any other specialized formatting. This is intended for an IB Diploma student studying Physics HL or SL, so keep explanations simple and straightforward.";
 
     // Log antes de enviar a requisição
-    console.log("Running assistant with:", { fullInstructions });
+    // console.log("Running assistant with:", { fullInstructions });
 
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
