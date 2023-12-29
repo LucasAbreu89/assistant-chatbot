@@ -66,8 +66,9 @@ const MessageInput = ({ content, setContent, sendMessage, loading, setExtractedI
 
 
     const handleDragOver = (e) => {
-        e.preventDefault();
+        e.preventDefault();  // Isso impede o comportamento padrão do navegador
     };
+
 
 
 
