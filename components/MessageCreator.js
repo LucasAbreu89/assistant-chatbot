@@ -75,10 +75,12 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
   const createNewMessage = async () => {
     setLoading(true);
     try {
-      // Passa o array de fileIds diretamente
-      const fullContent = extractedImageText
-        ? `${content}\n\n Extracted text from image: "${extractedImageText}"`
-        : content;
+      // Constrói o conteúdo da mensagem
+      let fullContent = content;
+      if (extractedImageText && extractedImageText.trim()) {
+        fullContent += `\n\nExtracted text from image: "${extractedImageText}"`;
+      }
+
       const messageData = { threadId, content: fullContent, fileIds }; // Usa o fullContent
 
       console.log("Sending message with file IDs:", messageData);
@@ -97,6 +99,8 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
       // Limpa a caixa de texto
       setContent('');
       setFirstMessageSent(true);
+
+      setExtractedImageText('');
 
     } catch (error) {
       console.error("Error creating message:", error);
@@ -353,13 +357,13 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
   }, [fileIds]);
 
   const clearImageOnSend = () => {
-    setImagePreviewUrl(null);  // Limpa o preview da imagem
-    setExtractedImageText(""); // Limpa o texto extraído
+    setImagePreviewUrl(null);  // clean image  preview 
+    setExtractedImageText(""); // clean  text
   };
 
   return (
     <div className={`flex justify-center items-center h-screen ${styles.messagecreator}`}>
-      <div className={`w-[950px] p-4 bg-white rounded-lg shadow-md mx-auto  ${styles.messagecreator}`}>
+      <div className={`w-[945px] p-4 bg-white rounded-lg shadow-md mx-auto  ${styles.messagecreator}`}>
         <div className={`mb-4 overflow-y-auto h-[500px] bg-white ${styles.textareaa}`}>
           {/* Renderizar a mensagem inicial com a imagem do assistente */}
           <div className={`relative flex items-start p-5 my-5 mr-4 rounded-lg bg-gray-50 text-black`}>
@@ -382,7 +386,7 @@ const MessageCreator = ({ threadId, assistantId, instructions }) => {
                 copied={copied}
                 showCopiedAlert={showCopiedAlert}
                 copyImageToClipboard={copyImageToClipboard}
-                messagesHistory={messages} // Adicione esta linha
+                messagesHistory={messages}
 
               />
             ))

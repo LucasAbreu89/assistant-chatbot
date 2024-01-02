@@ -1,0 +1,42 @@
+.buttonsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+
+}
+
+.attachmentButtonContainer {
+    display: none; /* Esconder por padrão, mostrado apenas em telas menores */
+    padding-right: 15px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.sendbutton {
+    cursor: pointer;
+    /* outros estilos para o botão de envio */
+}
+
+@media screen and (max-width: 550px) {
+    .attachmentButtonContainer {
+        display: block;
+    }
+}
+
+.attachmentButton {
+    border: 1px solid black;  /* Adiciona uma borda preta de 1px */
+    border-radius: 20%;   
+    display: inline-block;    /* Para aplicar o padding */
+    padding: 2px;             /* Espaço entre a borda e a imagem */
+    object-fit: cover;       /* Garante que a imagem cubra todo o espaço sem distorcer */
+    /* Se necessário, ajuste o tamanho da imagem */
+    width: 38px;              /* Largura do botão */
+    height: 32px;             /* Altura do botão */
+}
+
+.attachmentButton img {
+    border: 1px solid black;  /* Adiciona uma borda preta de 1px */
+    border-radius: 50%;        /* Opcional: torna a borda circular */
+}
+
